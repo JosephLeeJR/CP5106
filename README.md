@@ -1,4 +1,4 @@
-# VARLABS+: A Scalable Interactive XR Learning Platform.
+# VARLABS+: A Scalable Interactive XR Learning Platform
 
 A full-stack web application for student registration and management built with Node.js, Express, MongoDB, and React.
 
