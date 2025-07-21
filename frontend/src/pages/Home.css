@@ -1,27 +1,73 @@
 .home-container {
-  text-align: center;
-  padding: 3rem 0;
+  padding: 2rem 0;
 }
 
-.home-container h1 {
+.hero-section {
+  text-align: center;
+  padding: 3rem 0;
+  background-color: #f4f6f9;
+  margin-bottom: 3rem;
+}
+
+.hero-section h1 {
   font-size: 2.5rem;
   margin-bottom: 1rem;
   color: #333;
 }
 
-.home-container p {
+.hero-section p {
   font-size: 1.2rem;
   color: #666;
   margin-bottom: 2rem;
 }
 
-.home-buttons {
+.auth-buttons {
   display: flex;
   justify-content: center;
   gap: 1rem;
 }
 
-.home-buttons .btn {
+.auth-buttons .btn {
   padding: 0.75rem 2rem;
   font-size: 1.2rem;
+}
+
+.courses-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.courses-section h2 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.course-grid-item {
+  height: 100%;
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 992px) {
+  .courses-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .courses-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .hero-section h1 {
+    font-size: 2rem;
+  }
 } 

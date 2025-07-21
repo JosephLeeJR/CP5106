@@ -9,9 +9,6 @@ const Navbar = ({ isAuthenticated, user, logout }) => {
         <Link to="/dashboard">Dashboard</Link>
       </li>
       <li>
-        <Link to="/profile">Profile</Link>
-      </li>
-      <li>
         <a onClick={logout} href="#!">
           <i className="fas fa-sign-out-alt"></i>{' '}
           <span className="hide-sm">Logout</span>
@@ -35,7 +32,7 @@ const Navbar = ({ isAuthenticated, user, logout }) => {
     <nav className="navbar">
       <h1>
         <Link to="/">
-          <i className="fas fa-graduation-cap"></i> Student System
+          <i className="fas fa-laptop-code"></i> Tutorial Hub
         </Link>
       </h1>
       <div className="navbar-links">
