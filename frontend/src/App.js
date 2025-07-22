@@ -69,9 +69,9 @@ const App = () => {
   };
 
   // Register user
-  const register = async (name, email, password, studentId) => {
+  const register = async (name, email, password) => {
     try {
-      const res = await axios.post('/api/auth/register', { name, email, password, studentId });
+      const res = await axios.post('/api/auth/register', { name, email, password });
       setToken(res.data.token);
       return true;
     } catch (err) {
@@ -109,11 +109,11 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route 
               path="/register" 
-              element={!isAuthenticated ? <Register register={register} /> : <Navigate to="/dashboard" />} 
+              element={!isAuthenticated ? <Register register={register} /> : <Navigate to="/" />} 
             />
             <Route 
               path="/login" 
-              element={!isAuthenticated ? <Login login={login} /> : <Navigate to="/dashboard" />} 
+              element={!isAuthenticated ? <Login login={login} /> : <Navigate to="/" />} 
             />
             <Route 
               path="/dashboard" 

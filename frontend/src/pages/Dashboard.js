@@ -36,18 +36,18 @@ const Dashboard = ({ user }) => {
       <div className="dashboard-card">
         <h2>Your Profile</h2>
         <div className="dashboard-info">
-          <div className="info-item">
-            <p className="info-label">Name:</p>
-            <p className="info-value">{user.name}</p>
-          </div>
-          <div className="info-item">
-            <p className="info-label">Email:</p>
-            <p className="info-value">{user.email}</p>
-          </div>
-          <div className="info-item">
-            <p className="info-label">Student ID:</p>
-            <p className="info-value">{user.studentId}</p>
-          </div>
+          {user && (
+            <div className="user-info-group">
+              <p className="info-label">Name:</p>
+              <p className="info-value">{user.name}</p>
+            </div>
+          )}
+          {user && (
+            <div className="user-info-group">
+              <p className="info-label">Email:</p>
+              <p className="info-value">{user.email}</p>
+            </div>
+          )}
           <div className="info-item">
             <p className="info-label">Registered:</p>
             <p className="info-value">

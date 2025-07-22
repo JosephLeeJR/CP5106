@@ -15,11 +15,6 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  studentId: {
-    type: String,
-    required: true,
-    unique: true
-  },
   dateCreated: {
     type: Date,
     default: Date.now

@@ -64,17 +64,6 @@ const Profile = ({ user, setUser, showAlert }) => {
           />
         </div>
         
-        <div className="form-group">
-          <label>Student ID</label>
-          <input
-            type="text"
-            value={user.studentId}
-            className="form-control"
-            disabled
-          />
-          <small className="form-text">Student ID cannot be changed</small>
-        </div>
-        
         <input type="submit" className="btn" value="Update Profile" />
       </form>
     </div>

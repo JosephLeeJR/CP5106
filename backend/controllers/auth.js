@@ -5,7 +5,7 @@ const User = require('../models/User');
 // @route   POST /api/auth/register
 // @access  Public
 exports.register = async (req, res) => {
-  const { name, email, password, studentId } = req.body;
+  const { name, email, password } = req.body;
 
   try {
     // Check if user already exists
@@ -14,18 +14,11 @@ exports.register = async (req, res) => {
       return res.status(400).json({ msg: 'User already exists' });
     }
 
-    // Check if studentId already exists
-    user = await User.findOne({ studentId });
-    if (user) {
-      return res.status(400).json({ msg: 'Student ID already registered' });
-    }
-
     // Create new user
     user = new User({
       name,
       email,
-      password,
-      studentId
+      password
     });
 
     await user.save();

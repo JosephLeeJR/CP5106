@@ -7,13 +7,12 @@ const Register = ({ register }) => {
     name: '',
     email: '',
     password: '',
-    password2: '',
-    studentId: ''
+    password2: ''
   });
 
   const navigate = useNavigate();
 
-  const { name, email, password, password2, studentId } = formData;
+  const { name, email, password, password2 } = formData;
 
   const onChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -27,7 +26,7 @@ const Register = ({ register }) => {
       return;
     }
 
-    const success = await register(name, email, password, studentId);
+    const success = await register(name, email, password);
     if (success) {
       navigate('/dashboard');
     }
@@ -62,19 +61,6 @@ const Register = ({ register }) => {
             required
             className="form-control"
             placeholder="Enter your email"
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="studentId">Student ID</label>
-          <input
-            type="text"
-            name="studentId"
-            value={studentId}
-            onChange={onChange}
-            required
-            className="form-control"
-            placeholder="Enter your student ID"
           />
         </div>
         
