@@ -53,7 +53,7 @@ mongosh
 
 1. Navigate to the backend directory:
    ```
-   cd student-system/backend
+   cd backend
    ```
 
 2. Install dependencies:
@@ -77,7 +77,7 @@ mongosh
 
 1. Navigate to the frontend directory:
    ```
-   cd student-system/frontend
+   cd frontend
    ```
 
 2. Install dependencies:
