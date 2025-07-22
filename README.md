@@ -34,7 +34,20 @@ student-system/
 ### Prerequisites
 
 - Node.js (v14+)
-- MongoDB (Make sure MongoDB server is running)
+
+### Install MongoDB
+
+```
+apt install gnupg  
+apt install curl  
+curl -fsSL https://www.mongodb.org/static/pgp/server-4.4.asc | apt-key add -  
+echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.4 multiverse" \
+  | tee /etc/apt/sources.list.d/mongodb-org-4.4.list  
+apt update  
+apt install mongodb-org  
+mongod --config /etc/mongod.conf --fork  
+mongosh  
+```
 
 ### Backend Setup
 
