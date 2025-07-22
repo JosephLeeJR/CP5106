@@ -11,13 +11,14 @@ import Home from './pages/Home';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import Profile from './pages/Profile';
+import Admin from './pages/Admin';
 
 // Set default axios settings
 axios.defaults.baseURL = 'http://localhost:5000';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
@@ -31,11 +32,13 @@ const App = () => {
         try {
           const res = await axios.get('/api/auth/me');
           setUser(res.data);
+          setIsAdmin(res.data.isAdmin);
           setIsAuthenticated(true);
         } catch (err) {
           localStorage.removeItem('token');
           setToken(null);
           setUser(null);
+          setIsAdmin(false);
           setIsAuthenticated(false);
         }
       }
@@ -75,7 +78,10 @@ const App = () => {
       setToken(res.data.token);
       return true;
     } catch (err) {
-      showAlert(err.response?.data?.msg || 'Registration failed', 'danger');
+      const errorMsg = err.response?.data?.error 
+        ? `${err.response.data.msg}: ${err.response.data.error}`
+        : err.response?.data?.msg || 'Registration failed';
+      showAlert(errorMsg, 'danger');
       return false;
     }
   };
@@ -84,6 +90,7 @@ const App = () => {
   const logout = () => {
     setToken(null);
     setUser(null);
+    setIsAdmin(false);
     setIsAuthenticated(false);
   };
 
@@ -99,10 +106,16 @@ const App = () => {
     return isAuthenticated ? children : <Navigate to="/login" />;
   };
 
+  // Admin route protection
+  const AdminRoute = ({ children }) => {
+    if (loading) return <div>Loading...</div>;
+    return isAuthenticated && isAdmin ? children : <Navigate to="/" />;
+  };
+
   return (
     <Router>
       <div className="App">
-        <Navbar isAuthenticated={isAuthenticated} user={user} logout={logout} />
+        <Navbar isAuthenticated={isAuthenticated} user={user} logout={logout} isAdmin={isAdmin} />
         <div className="container">
           {alert && <Alert alert={alert} />}
           <Routes>
@@ -124,11 +137,11 @@ const App = () => {
               } 
             />
             <Route 
-              path="/profile" 
+              path="/admin" 
               element={
-                <PrivateRoute>
-                  <Profile user={user} setUser={setUser} showAlert={showAlert} />
-                </PrivateRoute>
+                <AdminRoute>
+                  <Admin />
+                </AdminRoute>
               } 
             />
           </Routes>

@@ -22,7 +22,25 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/cp5106', 
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-  .then(() => console.log('MongoDB connected'))
+  .then(() => {
+    console.log('MongoDB connected');
+
+    // Attempt to drop the stale unique index on studentId.
+    // This can happen if the schema changed but the index in the DB remained.
+    const User = require('./models/User');
+    User.collection.dropIndex('studentId_1')
+      .then(() => {
+        console.log('Successfully dropped legacy index: studentId_1');
+      })
+      .catch((err) => {
+        // It's okay if the index doesn't exist.
+        if (err.code === 27) { // IndexNotFound
+          console.log('Legacy index studentId_1 not found, no action needed.');
+        } else {
+          console.error('Error dropping legacy index studentId_1:', err);
+        }
+      });
+  })
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Routes

@@ -56,11 +56,6 @@ const Dashboard = ({ user }) => {
           </div>
         </div>
         
-        <div className="dashboard-actions">
-          <Link to="/profile" className="btn">
-            Edit Profile
-          </Link>
-        </div>
       </div>
 
       <div className="dashboard-card mt-4">

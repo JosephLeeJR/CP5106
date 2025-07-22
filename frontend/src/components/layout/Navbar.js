@@ -1,15 +1,27 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 
-const Navbar = ({ isAuthenticated, user, logout }) => {
+const Navbar = ({ isAuthenticated, user, logout, isAdmin }) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   const authLinks = (
     <ul>
       <li>
         <Link to="/dashboard">Dashboard</Link>
       </li>
+      {isAdmin && (
+        <li>
+          <Link to="/admin">Admin</Link>
+        </li>
+      )}
       <li>
-        <a onClick={logout} href="#!">
+        <a onClick={handleLogout} href="#!">
           <i className="fas fa-sign-out-alt"></i>{' '}
           <span className="hide-sm">Logout</span>
         </a>

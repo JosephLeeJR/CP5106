@@ -26,7 +26,8 @@ exports.register = async (req, res) => {
     // Create and return JWT token
     const payload = {
       user: {
-        id: user.id
+        id: user.id,
+        isAdmin: user.isAdmin
       }
     };
 
@@ -40,8 +41,8 @@ exports.register = async (req, res) => {
       }
     );
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error(err);
+    res.status(500).json({ msg: 'Server error during registration', error: err.message });
   }
 };
 
@@ -67,7 +68,8 @@ exports.login = async (req, res) => {
     // Create and return JWT
     const payload = {
       user: {
-        id: user.id
+        id: user.id,
+        isAdmin: user.isAdmin
       }
     };
 
