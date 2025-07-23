@@ -121,7 +121,11 @@ const App = () => {
           {alert && <Alert alert={alert} />}
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/course/:id" element={<CourseDetails />} />
+            <Route path="/course/:id" element={
+              <PrivateRoute>
+                <CourseDetails user={user} />
+              </PrivateRoute>
+            } />
             <Route 
               path="/register" 
               element={!isAuthenticated ? <Register register={register} /> : <Navigate to="/" />} 

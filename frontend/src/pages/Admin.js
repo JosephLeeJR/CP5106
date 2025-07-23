@@ -6,6 +6,9 @@ const Admin = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [courseStats, setCourseStats] = useState([]);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('users'); // 'users' or 'courseStats'
 
   const [allowlistText, setAllowlistText] = useState('');
   const [allowlistFile, setAllowlistFile] = useState(null);
@@ -26,6 +29,25 @@ const Admin = () => {
 
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+    // Fetch course time statistics
+    const fetchCourseStats = async () => {
+      try {
+        setStatsLoading(true);
+        const res = await axios.get('/api/courses/stats');
+        setCourseStats(res.data);
+      } catch (err) {
+        console.error('Failed to fetch course statistics:', err);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    if (activeTab === 'courseStats') {
+      fetchCourseStats();
+    }
+  }, [activeTab]);
 
   const handleAllowlistTextChange = (e) => {
     setAllowlistText(e.target.value);
@@ -63,6 +85,19 @@ const Admin = () => {
     setAllowlistUploading(false);
   };
 
+  // Format duration in seconds to mm:ss or hh:mm:ss
+  const formatDuration = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    } else {
+      return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+  };
+
   if (loading) {
     return (
       <div className="admin-container">
@@ -84,56 +119,112 @@ const Admin = () => {
   return (
     <div className="admin-container">
       <h1>Admin Dashboard</h1>
-      <div className="admin-card">
-        <h2>Batch Upload Allowlist</h2>
-        <form onSubmit={handleAllowlistUpload} style={{ marginBottom: '1rem' }}>
-          <div style={{ marginBottom: '0.5rem' }}>
-            <label>Paste allowlist (one per line: Name,Email):</label>
-            <textarea
-              value={allowlistText}
-              onChange={handleAllowlistTextChange}
-              rows={5}
-              style={{ width: '100%', marginTop: 4 }}
-              placeholder={"e.g.\nJoseph Lee,e1373369@u.nus.edu\nLi Minghao,e1373370@u.nus.edu"}
-            />
-          </div>
-          <div style={{ marginBottom: '0.5rem' }}>
-            <label>Or upload a .txt file:</label>
-            <input type="file" accept=".txt" onChange={handleAllowlistFileChange} />
-          </div>
-          <button type="submit" className="btn btn-primary" disabled={allowlistUploading}>
-            {allowlistUploading ? 'Uploading...' : 'Upload Allowlist'}
-          </button>
-          {allowlistMsg && <div style={{ marginTop: 8, color: allowlistMsg.toLowerCase().includes('success') ? 'green' : 'red' }}>{allowlistMsg}</div>}
-        </form>
-        <h2>User List</h2>
-        <p>Total users in system: {users.length}</p>
-        
-        <div className="user-table-container">
-          <table className="user-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Registration Date</th>
-                <th>Admin</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(user => (
-                <tr key={user._id}>
-                  <td>{user._id}</td>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
-                  <td>{new Date(user.dateCreated).toLocaleString()}</td>
-                  <td>{user.isAdmin ? 'Yes' : 'No'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      
+      <div className="admin-tabs">
+        <button 
+          className={`tab-button ${activeTab === 'users' ? 'active' : ''}`} 
+          onClick={() => setActiveTab('users')}
+        >
+          Users
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'courseStats' ? 'active' : ''}`} 
+          onClick={() => setActiveTab('courseStats')}
+        >
+          Course Statistics
+        </button>
       </div>
+
+      {activeTab === 'users' && (
+        <div className="admin-card">
+          <h2>Batch Upload Allowlist</h2>
+          <form onSubmit={handleAllowlistUpload} style={{ marginBottom: '1rem' }}>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <label>Paste allowlist (one per line: Name,Email):</label>
+              <textarea
+                value={allowlistText}
+                onChange={handleAllowlistTextChange}
+                rows={5}
+                style={{ width: '100%', marginTop: 4 }}
+                placeholder={"e.g.\nJoseph Lee,e1373369@u.nus.edu\nLi Minghao,e1373370@u.nus.edu"}
+              />
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <label>Or upload a .txt file:</label>
+              <input type="file" accept=".txt" onChange={handleAllowlistFileChange} />
+            </div>
+            <button type="submit" className="btn btn-primary" disabled={allowlistUploading}>
+              {allowlistUploading ? 'Uploading...' : 'Upload Allowlist'}
+            </button>
+            {allowlistMsg && <div style={{ marginTop: 8, color: allowlistMsg.toLowerCase().includes('success') ? 'green' : 'red' }}>{allowlistMsg}</div>}
+          </form>
+          <h2>User List</h2>
+          <p>Total users in system: {users.length}</p>
+          
+          <div className="user-table-container">
+            <table className="user-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Registration Date</th>
+                  <th>Admin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map(user => (
+                  <tr key={user._id}>
+                    <td>{user._id}</td>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>{new Date(user.dateCreated).toLocaleString()}</td>
+                    <td>{user.isAdmin ? 'Yes' : 'No'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'courseStats' && (
+        <div className="admin-card">
+          <h2>Course Time Statistics</h2>
+          {statsLoading ? (
+            <div className="loading">Loading statistics...</div>
+          ) : courseStats.length === 0 ? (
+            <div className="no-data">No course activity data available yet.</div>
+          ) : (
+            <div className="stats-container">
+              <div className="user-table-container">
+                <table className="user-table stats-table">
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Email</th>
+                      <th>Course</th>
+                      <th>Total Time</th>
+                      <th>Last Visit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {courseStats.map((stat, index) => (
+                      <tr key={index}>
+                        <td>{stat.userName}</td>
+                        <td>{stat.userEmail}</td>
+                        <td>{stat.courseName}</td>
+                        <td>{formatDuration(stat.totalDuration)}</td>
+                        <td>{new Date(stat.lastVisit).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

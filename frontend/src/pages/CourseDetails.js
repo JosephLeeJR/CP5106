@@ -1,15 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import './CourseDetails.css';
 
-const CourseDetails = () => {
+const CourseDetails = ({ user }) => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [startTime, setStartTime] = useState(null);
+
+  // Function to record course visit time
+  const recordVisitTime = async (duration) => {
+    try {
+      // Only record if user is logged in (token exists)
+      if (localStorage.getItem('token')) {
+        await axios.post('/api/courses/time', { 
+          courseId: id,
+          duration: Math.round(duration) // Duration in seconds
+        });
+        console.log(`Recorded ${Math.round(duration)} seconds for course ${id}`);
+      }
+    } catch (error) {
+      console.error('Failed to record course time:', error);
+    }
+  };
 
   useEffect(() => {
-    // In a real app, this would be an API call
-    // For now, we'll use the detailed content for each course
+    // Start the timer when the component mounts
+    const timeStart = new Date();
+    setStartTime(timeStart);
+
+    // Fetch course details
     const fetchCourseDetails = () => {
       const courseDetails = {
         1: {
@@ -238,7 +260,39 @@ const CourseDetails = () => {
     };
 
     fetchCourseDetails();
+
+    // Cleanup function that runs when the component unmounts
+    return () => {
+      const timeEnd = new Date();
+      const durationInSeconds = (timeEnd - timeStart) / 1000;
+      
+      // Only record time if the user spent at least 1 second on the page
+      if (durationInSeconds >= 1) {
+        recordVisitTime(durationInSeconds);
+      }
+    };
   }, [id]);
+
+  // Record time when user navigates away but stays in the app
+  useEffect(() => {
+    const handleBeforeNavigate = () => {
+      if (startTime) {
+        const timeEnd = new Date();
+        const durationInSeconds = (timeEnd - startTime) / 1000;
+        
+        if (durationInSeconds >= 1) {
+          recordVisitTime(durationInSeconds);
+        }
+      }
+    };
+
+    // Listen for route changes within the app
+    window.addEventListener('beforeunload', handleBeforeNavigate);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeNavigate);
+    };
+  }, [startTime, id]);
 
   if (loading) {
     return <div className="loading">Loading...</div>;
