@@ -14,9 +14,43 @@
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
+/* Locked course styles */
+.locked-course {
+  position: relative;
+  filter: grayscale(50%);
+}
+
+.course-lock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.course-lock-overlay i {
+  font-size: 2.5rem;
+  color: white;
+}
+
+.locked-btn {
+  background-color: #6c757d !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+}
+
+.locked-btn:hover {
+  background-color: #6c757d !important;
+}
+
 .course-image {
   height: 180px;
   overflow: hidden;
+  position: relative;
 }
 
 .course-image img {
@@ -64,6 +98,7 @@
   border-radius: 4px;
   text-decoration: none;
   transition: background-color 0.3s ease;
+  border: none;
 }
 
 .course-btn:hover {

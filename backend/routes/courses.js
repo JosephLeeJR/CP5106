@@ -17,6 +17,27 @@ const courses = {
   9: { id: 9, title: 'DevOps Practices' },
 };
 
+// @route   GET api/courses/progress
+// @desc    Get user's course progress for unlocking courses
+// @access  Private
+router.get('/progress', auth, async (req, res) => {
+  try {
+    // Get all course time records for the user
+    const courseTimeRecords = await CourseTime.find({ user: req.user.id });
+    
+    // Convert to an object mapping courseId to duration
+    const progressData = {};
+    courseTimeRecords.forEach(record => {
+      progressData[record.courseId] = record.duration;
+    });
+    
+    res.json(progressData);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 // @route   POST api/courses/time
 // @desc    Record time spent on a course
 // @access  Private

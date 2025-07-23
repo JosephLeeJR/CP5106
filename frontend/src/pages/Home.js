@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import CourseCard from '../components/course/CourseCard';
+import axios from 'axios';
 import './Home.css';
 
 const Home = () => {
-  // 模拟课程数据
+  // Course data
   const [courses, setCourses] = useState([
     {
       id: 1,
@@ -62,6 +63,57 @@ const Home = () => {
     }
   ]);
 
+  const [courseProgress, setCourseProgress] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Check if user is authenticated and fetch course progress
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      
+      if (token) {
+        setIsAuthenticated(true);
+        try {
+          // Set auth header
+          axios.defaults.headers.common['x-auth-token'] = token;
+          
+          // Fetch course progress
+          const res = await axios.get('/api/courses/progress');
+          setCourseProgress(res.data);
+        } catch (error) {
+          console.error('Error fetching course progress:', error);
+        }
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
+  }, []);
+
+  // Function to determine if a course is locked
+  const isCourseLocked = (courseId) => {
+    // Course 1 is always unlocked
+    if (courseId === 1) return false;
+
+    // If not authenticated, all courses except first are locked
+    if (!isAuthenticated) return true;
+
+    // Check if previous course has been studied for at least 2 minutes (120 seconds)
+    const previousCourseId = courseId - 1;
+    const previousCourseTime = courseProgress[previousCourseId] || 0;
+    
+    return previousCourseTime < 120; // 2 minutes in seconds
+  };
+
+  if (loading) {
+    return (
+      <div className="home-container">
+        <div className="loading">Loading courses...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="home-container">
       <div className="hero-section">
@@ -71,10 +123,18 @@ const Home = () => {
 
       <div className="courses-section">
         <h2>Available Courses</h2>
+        {!isAuthenticated && (
+          <div className="course-note">
+            <p><i className="fas fa-info-circle"></i> Please log in to unlock all courses. Course progression is sequential.</p>
+          </div>
+        )}
         <div className="courses-grid">
           {courses.map(course => (
             <div key={course.id} className="course-grid-item">
-              <CourseCard course={course} />
+              <CourseCard 
+                course={course} 
+                isLocked={isCourseLocked(course.id)}
+              />
             </div>
           ))}
         </div>
