@@ -72,9 +72,9 @@ const App = () => {
   };
 
   // Register user
-  const register = async (name, email, password) => {
+  const register = async (email, password) => {
     try {
-      const res = await axios.post('/api/auth/register', { name, email, password });
+      const res = await axios.post('/api/auth/register', { email, password });
       setToken(res.data.token);
       return true;
     } catch (err) {

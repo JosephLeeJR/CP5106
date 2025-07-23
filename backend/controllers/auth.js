@@ -6,7 +6,7 @@ const Allowlist = require('../models/Allowlist');
 // @route   POST /api/auth/register
 // @access  Public
 exports.register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { email, password } = req.body;
 
   try {
     // Check if email is in allowlist
@@ -20,9 +20,9 @@ exports.register = async (req, res) => {
       return res.status(400).json({ msg: 'User already exists' });
     }
 
-    // Create new user
+    // Create new user, use name from allowlist
     user = new User({
-      name,
+      name: allow.name,
       email,
       password
     });

@@ -4,7 +4,6 @@ import './Auth.css';
 
 const Register = ({ register }) => {
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
     password2: ''
@@ -12,7 +11,7 @@ const Register = ({ register }) => {
 
   const navigate = useNavigate();
 
-  const { name, email, password, password2 } = formData;
+  const { email, password, password2 } = formData;
 
   const onChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,7 +25,7 @@ const Register = ({ register }) => {
       return;
     }
 
-    const success = await register(name, email, password);
+    const success = await register(email, password);
     if (success) {
       navigate('/dashboard');
     }
@@ -38,19 +37,6 @@ const Register = ({ register }) => {
       <p className="auth-subtitle">Create Your Account</p>
       
       <form className="auth-form" onSubmit={onSubmit}>
-        <div className="form-group">
-          <label htmlFor="name">Name</label>
-          <input
-            type="text"
-            name="name"
-            value={name}
-            onChange={onChange}
-            required
-            className="form-control"
-            placeholder="Enter your name"
-          />
-        </div>
-        
         <div className="form-group">
           <label htmlFor="email">Email</label>
           <input
