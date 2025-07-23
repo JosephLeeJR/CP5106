@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Allowlist = require('../models/Allowlist');
 
 // @desc    Register a user
 // @route   POST /api/auth/register
@@ -8,6 +9,11 @@ exports.register = async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
+    // Check if email is in allowlist
+    const allow = await Allowlist.findOne({ email });
+    if (!allow) {
+      return res.status(403).json({ msg: 'Email is not allowed to register' });
+    }
     // Check if user already exists
     let user = await User.findOne({ email });
     if (user) {

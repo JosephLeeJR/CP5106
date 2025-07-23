@@ -14,4 +14,9 @@ router.get('/', auth, admin, usersController.getUsers);
 // @access  Private
 router.get('/:id', auth, usersController.getUserById);
 
+// Allowlist batch upload
+const multer = require('multer');
+const upload = multer();
+router.post('/allowlist', auth, admin, upload.single('file'), usersController.uploadAllowlist);
+
 module.exports = router; 
