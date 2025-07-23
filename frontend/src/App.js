@@ -12,6 +12,7 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
+import CourseDetails from './pages/CourseDetails';
 
 // Set default axios settings
 axios.defaults.baseURL = 'http://localhost:5000';
@@ -120,6 +121,7 @@ const App = () => {
           {alert && <Alert alert={alert} />}
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/course/:id" element={<CourseDetails />} />
             <Route 
               path="/register" 
               element={!isAuthenticated ? <Register register={register} /> : <Navigate to="/" />} 
