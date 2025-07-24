@@ -8,20 +8,31 @@ Mcomp GenTrack Webiste: https://mysoc.nus.edu.sg/app/gentrack/
 
 ## Features
 
-- Frontend and Backend separation (MERN Stack)
-- User authentication (Register, Login, JWT)
+- Modern MERN stack architecture (MongoDB, Express, React, Node.js)
+- Complete frontend and backend separation
+- Comprehensive user authentication system (Register, Login, JWT)
+- Role-based access control (Admin and Regular users)
 - Student profile management
-- Data stored in MongoDB
+- Course progress tracking and time management
+- Admin dashboard for monitoring student engagement
+- Bulk user registration via allowlist upload
+- Persistent data storage with MongoDB
 
 ## Project Structure
 
 ```
-student-system/
+CP5106/
 ├── backend/         # Express API server
 │   ├── controllers/ # Route controllers
 │   ├── models/      # MongoDB models
-│   ├── middleware/  # Custom middleware
+│       ├── User.js        # User schema and model
+│       ├── Allowlist.js   # Allowlist for user registration
+│       └── CourseTime.js  # Course time tracking
+│   ├── middleware/  # Custom middleware (auth, admin)
 │   ├── routes/      # API routes
+│       ├── auth.js        # Authentication routes
+│       ├── users.js       # User management routes  
+│       └── courses.js     # Course management routes
 │   └── server.js    # Main server file
 │
 └── frontend/        # React frontend
@@ -103,11 +114,17 @@ mongosh
 ### Authentication
 
 - `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login and get token
+- `POST /api/auth/login` - Login and get authentication token
 - `GET /api/auth/me` - Get current user info (requires token)
 
 ### User Management
 
-- `GET /api/users` - Get all users (requires token)
-- `GET /api/users/:id` - Get specific user (requires token)
-- `PUT /api/users/profile` - Update user profile (requires token) 
+- `GET /api/users` - Get all users (admin only)
+- `GET /api/users/:id` - Get specific user by ID (requires token)
+- `POST /api/users/allowlist` - Upload batch user allowlist (admin only)
+
+### Course Management
+
+- `GET /api/courses/progress` - Get user's course progress
+- `POST /api/courses/time` - Record time spent on a course
+- `GET /api/courses/stats` - Get course time statistics (admin only) 
