@@ -1,0 +1,42 @@
+Title: Kubernetes Fundamentals
+Description: Deploy, scale, and manage containerized applications with Kubernetes and essential cluster primitives.
+Image URL: https://via.placeholder.com/800x450?text=Kubernetes+Fundamentals
+
+<h2>Kubernetes Fundamentals</h2>
+<p>
+  Learn Kubernetes concepts and workflows to run containerized applications reliably.
+  You will practice defining resources, deploying workloads, and operating clusters at scale.
+</p>
+
+<h3>What You’ll Learn</h3>
+<ul>
+  <li>Core objects: Pods, Deployments, Services</li>
+  <li>Configuration: ConfigMaps, Secrets, environment</li>
+  <li>Scaling and self‑healing: replicas, probes, rollouts</li>
+  <li>Networking basics and Ingress</li>
+  <li>Storage with PersistentVolumes and Claims</li>
+  <li>Basic troubleshooting and observability</li>
+</ul>
+
+<h3>Prerequisites</h3>
+<ul>
+  <li>Containers (Docker) basics</li>
+  <li>Command‑line familiarity</li>
+</ul>
+
+<h3>Course Outline</h3>
+<ol>
+  <li><strong>Cluster Basics:</strong> API, kubectl, namespaces</li>
+  <li><strong>Workloads:</strong> Deployments, scaling, updates</li>
+  <li><strong>Networking:</strong> Services, Ingress, DNS</li>
+  <li><strong>Config & Secrets:</strong> externalizing settings</li>
+  <li><strong>Storage:</strong> volumes, stateful considerations</li>
+  <li><strong>Operations:</strong> logs, events, health checks</li>
+</ol>
+
+<h3>Expected Outcomes</h3>
+<ul>
+  <li>Deploy and expose applications on Kubernetes</li>
+  <li>Scale and roll out changes safely</li>
+  <li>Diagnose common runtime issues</li>
+</ul>
