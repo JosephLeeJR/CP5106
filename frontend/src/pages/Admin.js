@@ -8,12 +8,16 @@ const Admin = () => {
   const [error, setError] = useState(null);
   const [courseStats, setCourseStats] = useState([]);
   const [statsLoading, setStatsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('users'); // 'users' or 'courseStats'
+  const [activeTab, setActiveTab] = useState('users'); // 'users' | 'courseStats' | 'settings'
 
   const [allowlistText, setAllowlistText] = useState('');
   const [allowlistFile, setAllowlistFile] = useState(null);
   const [allowlistMsg, setAllowlistMsg] = useState(null);
   const [allowlistUploading, setAllowlistUploading] = useState(false);
+
+  const [unlockThreshold, setUnlockThreshold] = useState(120);
+  const [settingsMsg, setSettingsMsg] = useState(null);
+  const [settingsLoading, setSettingsLoading] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -46,6 +50,27 @@ const Admin = () => {
 
     if (activeTab === 'courseStats') {
       fetchCourseStats();
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        setSettingsLoading(true);
+        const res = await axios.get('/api/settings/unlock-threshold');
+        const value = Number(res.data?.value);
+        if (Number.isFinite(value)) {
+          setUnlockThreshold(value);
+        }
+      } catch (err) {
+        console.error('Failed to fetch settings:', err);
+      } finally {
+        setSettingsLoading(false);
+      }
+    };
+
+    if (activeTab === 'settings') {
+      fetchSettings();
     }
   }, [activeTab]);
 
@@ -83,6 +108,17 @@ const Admin = () => {
       setAllowlistMsg(err.response?.data?.msg || 'Upload failed');
     }
     setAllowlistUploading(false);
+  };
+
+  const handleSettingsSave = async (e) => {
+    e.preventDefault();
+    setSettingsMsg(null);
+    try {
+      const res = await axios.put('/api/settings/unlock-threshold', { value: Number(unlockThreshold) });
+      setSettingsMsg(res.data?.msg || 'Settings saved successfully');
+    } catch (err) {
+      setSettingsMsg(err.response?.data?.msg || 'Failed to save settings');
+    }
   };
 
   // Format duration in seconds to mm:ss or hh:mm:ss
@@ -132,6 +168,12 @@ const Admin = () => {
           onClick={() => setActiveTab('courseStats')}
         >
           Course Statistics
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'settings' ? 'active' : ''}`} 
+          onClick={() => setActiveTab('settings')}
+        >
+          Settings
         </button>
       </div>
 
@@ -223,6 +265,27 @@ const Admin = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'settings' && (
+        <div className="admin-card">
+          <h2>Settings</h2>
+          <form onSubmit={handleSettingsSave}>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <label>Unlock threshold (seconds):</label>
+              <input 
+                type="number" 
+                min="0" 
+                value={unlockThreshold}
+                onChange={(e) => setUnlockThreshold(e.target.value)}
+                style={{ marginLeft: 8 }}
+              />
+            </div>
+            <button type="submit" className="btn btn-primary">Save Settings</button>
+            {settingsLoading && <div className="loading" style={{ marginTop: 8 }}>Loading current settings...</div>}
+            {settingsMsg && <div style={{ marginTop: 8 }}>{settingsMsg}</div>}
+          </form>
         </div>
       )}
     </div>

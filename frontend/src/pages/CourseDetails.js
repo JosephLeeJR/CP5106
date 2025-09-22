@@ -10,6 +10,7 @@ const CourseDetails = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [startTime, setStartTime] = useState(null);
   const [isLocked, setIsLocked] = useState(false);
+  const [unlockThreshold, setUnlockThreshold] = useState(120);
   const courseId = parseInt(id);
 
   // Check if the course is locked
@@ -22,16 +23,27 @@ const CourseDetails = ({ user }) => {
           return;
         }
 
+        // Fetch unlock threshold (requires auth)
+        try {
+          const settingRes = await axios.get('/api/settings/unlock-threshold');
+          const value = Number(settingRes.data?.value);
+          if (Number.isFinite(value)) {
+            setUnlockThreshold(value);
+          }
+        } catch (err) {
+          console.error('Error fetching unlock threshold:', err);
+        }
+
         // Check if previous course has been completed
         const res = await axios.get('/api/courses/progress');
         const previousCourseTime = res.data[courseId - 1] || 0;
         
-        // If previous course time is less than 2 minutes (120 seconds), this course is locked
-        if (previousCourseTime < 120) {
+        // If previous course time is less than threshold seconds, this course is locked
+        if (previousCourseTime < (Number.isFinite(unlockThreshold) ? unlockThreshold : 120)) {
           setIsLocked(true);
           
           // Show alert and redirect to home
-          alert(`This course is locked. You need to spend at least 2 minutes on Course ${courseId - 1} to unlock it.`);
+          alert(`This course is locked. You need to spend at least ${Number.isFinite(unlockThreshold) ? unlockThreshold : 120} seconds on Course ${courseId - 1} to unlock it.`);
           navigate('/');
         } else {
           setIsLocked(false);
@@ -44,7 +56,7 @@ const CourseDetails = ({ user }) => {
     };
 
     checkCourseAccess();
-  }, [courseId, navigate]);
+  }, [courseId, navigate, unlockThreshold]);
 
   // Function to record course visit time
   const recordVisitTime = async (duration) => {

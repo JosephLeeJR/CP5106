@@ -7,6 +7,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const courseRoutes = require('./routes/courses');
+const settingsRoutes = require('./routes/settings');
 
 // Load environment variables
 dotenv.config();
@@ -48,6 +49,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/cp5106', 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Simple test route
 app.get('/', (req, res) => {

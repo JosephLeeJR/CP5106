@@ -66,6 +66,7 @@ const Home = () => {
   const [courseProgress, setCourseProgress] = useState({});
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [unlockThreshold, setUnlockThreshold] = useState(120);
 
   // Check if user is authenticated and fetch course progress
   useEffect(() => {
@@ -81,6 +82,17 @@ const Home = () => {
           // Fetch course progress
           const res = await axios.get('/api/courses/progress');
           setCourseProgress(res.data);
+
+          // Fetch unlock threshold
+          try {
+            const settingRes = await axios.get('/api/settings/unlock-threshold');
+            const value = Number(settingRes.data?.value);
+            if (Number.isFinite(value)) {
+              setUnlockThreshold(value);
+            }
+          } catch (err) {
+            console.error('Error fetching unlock threshold:', err);
+          }
         } catch (error) {
           console.error('Error fetching course progress:', error);
         }
@@ -99,11 +111,11 @@ const Home = () => {
     // If not authenticated, all courses except first are locked
     if (!isAuthenticated) return true;
 
-    // Check if previous course has been studied for at least 2 minutes (120 seconds)
+    // Check if previous course has been studied for at least threshold seconds
     const previousCourseId = courseId - 1;
     const previousCourseTime = courseProgress[previousCourseId] || 0;
     
-    return previousCourseTime < 120; // 2 minutes in seconds
+    return previousCourseTime < unlockThreshold;
   };
 
   if (loading) {
