@@ -7,23 +7,15 @@ const Dashboard = ({ user }) => {
   const [progressMap, setProgressMap] = useState({}); // { courseId: seconds }
   const [unlockThreshold, setUnlockThreshold] = useState(120);
   const [loading, setLoading] = useState(true);
-
-  // Local catalog to render titles/images
-  const courseCatalog = {
-    1: { id: 1, title: 'Introduction to Programming', image: 'https://via.placeholder.com/300x180?text=Programming+Basics' },
-    2: { id: 2, title: 'Web Development Fundamentals', image: 'https://via.placeholder.com/300x180?text=Web+Development' },
-    3: { id: 3, title: 'Database Design', image: 'https://via.placeholder.com/300x180?text=Database+Design' },
-    4: { id: 4, title: 'Mobile App Development', image: 'https://via.placeholder.com/300x180?text=Mobile+Development' },
-    5: { id: 5, title: 'Machine Learning Basics', image: 'https://via.placeholder.com/300x180?text=Machine+Learning' },
-    6: { id: 6, title: 'Cloud Computing', image: 'https://via.placeholder.com/300x180?text=Cloud+Computing' },
-    7: { id: 7, title: 'Cybersecurity Essentials', image: 'https://via.placeholder.com/300x180?text=Cybersecurity' },
-    8: { id: 8, title: 'Data Structures and Algorithms', image: 'https://via.placeholder.com/300x180?text=DS+and+Algorithms' },
-    9: { id: 9, title: 'DevOps Practices', image: 'https://via.placeholder.com/300x180?text=DevOps' }
-  };
+  const [courseList, setCourseList] = useState([]); // fetched from backend
 
   useEffect(() => {
     const init = async () => {
       try {
+        // Public: fetch courses list for titles/order
+        const coursesRes = await axios.get('/api/courses');
+        setCourseList(coursesRes.data || []);
+
         // ensure auth header from localStorage (in case not set globally)
         const token = localStorage.getItem('token');
         if (token) {
@@ -33,10 +25,18 @@ const Dashboard = ({ user }) => {
         const [progressRes, settingRes] = await Promise.all([
           axios.get('/api/courses/progress'),
           axios.get('/api/settings/unlock-threshold')
-        ]);
+        ]).catch(async (err) => {
+          // If unauthenticated, progress/settings may fail; handle gracefully
+          try {
+            const settingOnly = await axios.get('/api/settings/unlock-threshold');
+            return [{ data: {} }, settingOnly];
+          } catch {
+            return [{ data: {} }, { data: { value: 120 } }];
+          }
+        });
 
-        setProgressMap(progressRes.data || {});
-        const value = Number(settingRes.data?.value);
+        setProgressMap(progressRes?.data || {});
+        const value = Number(settingRes?.data?.value);
         if (Number.isFinite(value)) setUnlockThreshold(value);
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
@@ -52,24 +52,31 @@ const Dashboard = ({ user }) => {
     return <div className="loading">Loading...</div>;
   }
 
+  // Build course lookup and order map
+  const courseById = new Map((courseList || []).map(c => [String(c.id), c]));
+  const orderIndexById = new Map((courseList || []).map((c, idx) => [String(c.id), idx]));
+
   // Build list of courses the user has watched (duration > 0)
   const watchedCourses = Object.entries(progressMap)
     .filter(([_, seconds]) => Number(seconds) > 0)
     .map(([courseIdStr, seconds]) => {
-      const courseId = Number(courseIdStr);
-      const catalog = courseCatalog[courseId] || { id: courseId, title: `Course ${courseId}`, image: 'https://via.placeholder.com/300x180?text=Course' };
+      const c = courseById.get(String(courseIdStr));
+      const fallbackTitle = `Course ${String(courseIdStr).slice(0, 6)}`;
+      const title = c?.title || fallbackTitle;
+      const image = c?.image || 'https://via.placeholder.com/300x180?text=Course';
       const threshold = Number(unlockThreshold);
       const pct = threshold > 0 ? Math.min(100, Math.round((Number(seconds) / threshold) * 100)) : 100;
       return {
-        id: catalog.id,
-        title: catalog.title,
-        image: catalog.image,
+        id: String(courseIdStr),
+        order: orderIndexById.has(String(courseIdStr)) ? orderIndexById.get(String(courseIdStr)) : Number.MAX_SAFE_INTEGER,
+        title,
+        image,
         watchedSeconds: Number(seconds),
         thresholdSeconds: threshold,
         percent: pct
       };
     })
-    .sort((a, b) => a.id - b.id);
+    .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
 
   return (
     <div className="dashboard-container">

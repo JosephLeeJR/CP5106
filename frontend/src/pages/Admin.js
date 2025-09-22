@@ -8,7 +8,7 @@ const Admin = () => {
   const [error, setError] = useState(null);
   const [courseStats, setCourseStats] = useState([]);
   const [statsLoading, setStatsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('users'); // 'users' | 'courseStats' | 'settings'
+  const [activeTab, setActiveTab] = useState('users'); // 'users' | 'courseStats' | 'settings' | 'courses'
 
   const [allowlistText, setAllowlistText] = useState('');
   const [allowlistFile, setAllowlistFile] = useState(null);
@@ -18,6 +18,25 @@ const Admin = () => {
   const [unlockThreshold, setUnlockThreshold] = useState(120);
   const [settingsMsg, setSettingsMsg] = useState(null);
   const [settingsLoading, setSettingsLoading] = useState(false);
+
+  // Courses tab state
+  const [newCourseTitle, setNewCourseTitle] = useState('');
+  const [newCourseDesc, setNewCourseDesc] = useState('');
+  const [newCourseImage, setNewCourseImage] = useState('');
+  const [newCourseContent, setNewCourseContent] = useState(''); // HTML
+  const [courseSubmitMsg, setCourseSubmitMsg] = useState(null);
+  const [courseSubmitting, setCourseSubmitting] = useState(false);
+  const [existingCourses, setExistingCourses] = useState([]);
+  const [coursesLoading, setCoursesLoading] = useState(false);
+
+  // Edit mode state
+  const [editingId, setEditingId] = useState('');
+  const [editMsg, setEditMsg] = useState(null);
+  const [editSaving, setEditSaving] = useState(false);
+
+  // Reorder state
+  const [reorderMsg, setReorderMsg] = useState(null);
+  const [reorderSaving, setReorderSaving] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -35,7 +54,6 @@ const Admin = () => {
   }, []);
 
   useEffect(() => {
-    // Fetch course time statistics
     const fetchCourseStats = async () => {
       try {
         setStatsLoading(true);
@@ -71,6 +89,24 @@ const Admin = () => {
 
     if (activeTab === 'settings') {
       fetchSettings();
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setCoursesLoading(true);
+        const res = await axios.get('/api/courses');
+        setExistingCourses(res.data || []);
+      } catch (err) {
+        console.error('Failed to fetch courses:', err);
+      } finally {
+        setCoursesLoading(false);
+      }
+    };
+
+    if (activeTab === 'courses') {
+      fetchCourses();
     }
   }, [activeTab]);
 
@@ -119,6 +155,114 @@ const Admin = () => {
     } catch (err) {
       setSettingsMsg(err.response?.data?.msg || 'Failed to save settings');
     }
+  };
+
+  const handleCreateCourse = async (e) => {
+    e.preventDefault();
+    setCourseSubmitMsg(null);
+    setCourseSubmitting(true);
+    try {
+      const payload = {
+        title: newCourseTitle.trim(),
+        description: newCourseDesc.trim(),
+        image: newCourseImage.trim() || undefined,
+        content: newCourseContent
+      };
+      const res = await axios.post('/api/courses', payload);
+      setCourseSubmitMsg(res.data?.msg || 'Course created successfully');
+      setNewCourseTitle('');
+      setNewCourseDesc('');
+      setNewCourseImage('');
+      setNewCourseContent('');
+      // refresh list
+      try {
+        const listRes = await axios.get('/api/courses');
+        setExistingCourses(listRes.data || []);
+      } catch {}
+    } catch (err) {
+      setCourseSubmitMsg(err.response?.data?.msg || 'Failed to create course');
+    }
+    setCourseSubmitting(false);
+  };
+
+  const startEditing = async (id) => {
+    setEditMsg(null);
+    setEditingId(id);
+    try {
+      const res = await axios.get(`/api/courses/${id}`);
+      setNewCourseTitle(res.data?.title || '');
+      setNewCourseDesc(res.data?.description || '');
+      setNewCourseImage(res.data?.image || '');
+      setNewCourseContent(res.data?.content || '');
+    } catch (err) {
+      setEditMsg('Failed to load course for editing');
+    }
+  };
+
+  const cancelEditing = () => {
+    setEditingId('');
+    setEditMsg(null);
+    setNewCourseTitle('');
+    setNewCourseDesc('');
+    setNewCourseImage('');
+    setNewCourseContent('');
+  };
+
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    if (!editingId) return;
+    setEditSaving(true);
+    setEditMsg(null);
+    try {
+      const payload = {
+        title: newCourseTitle,
+        description: newCourseDesc,
+        image: newCourseImage,
+        content: newCourseContent
+      };
+      const res = await axios.put(`/api/courses/${editingId}`, payload);
+      // Refresh list first
+      try {
+        const listRes = await axios.get('/api/courses');
+        setExistingCourses(listRes.data || []);
+      } catch {}
+      // Popup success and reset to default state
+      window.alert(res.data?.msg || 'Course updated successfully');
+      cancelEditing();
+    } catch (err) {
+      setEditMsg(err.response?.data?.msg || 'Failed to update course');
+    }
+    setEditSaving(false);
+  };
+
+  const moveCourse = (idx, delta) => {
+    const newIdx = idx + delta;
+    if (newIdx < 0 || newIdx >= existingCourses.length) return;
+    const list = [...existingCourses];
+    const tmp = list[idx];
+    list[idx] = list[newIdx];
+    list[newIdx] = tmp;
+    setExistingCourses(list);
+  };
+
+  const saveReorder = async () => {
+    setReorderMsg(null);
+    setReorderSaving(true);
+    try {
+      const payload = {
+        order: existingCourses.map((c, index) => ({ id: c.id, order: index }))
+      };
+      const res = await axios.put('/api/courses/reorder/bulk', payload);
+      setReorderMsg(res.data?.msg || 'Order saved successfully');
+      // refetch to ensure consistent order from backend
+      try {
+        const listRes = await axios.get('/api/courses');
+        setExistingCourses(listRes.data || []);
+      } catch {}
+    } catch (err) {
+      setReorderMsg(err.response?.data?.msg || 'Failed to save order');
+    }
+    setReorderSaving(false);
   };
 
   // Format duration in seconds to mm:ss or hh:mm:ss
@@ -174,6 +318,12 @@ const Admin = () => {
           onClick={() => setActiveTab('settings')}
         >
           Settings
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'courses' ? 'active' : ''}`} 
+          onClick={() => setActiveTab('courses')}
+        >
+          Courses
         </button>
       </div>
 
@@ -286,6 +436,105 @@ const Admin = () => {
             {settingsLoading && <div className="loading" style={{ marginTop: 8 }}>Loading current settings...</div>}
             {settingsMsg && <div style={{ marginTop: 8 }}>{settingsMsg}</div>}
           </form>
+        </div>
+      )}
+
+      {activeTab === 'courses' && (
+        <div className="admin-card">
+          <h2>{editingId ? 'Edit Course' : 'Create Course'}</h2>
+          <form onSubmit={editingId ? handleSaveEdit : handleCreateCourse}>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <label>Title:</label>
+              <input 
+                type="text"
+                value={newCourseTitle}
+                onChange={(e) => setNewCourseTitle(e.target.value)}
+                style={{ marginLeft: 8, width: '60%' }}
+                placeholder="Enter course title"
+                required
+              />
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <label>Description:</label>
+              <input 
+                type="text"
+                value={newCourseDesc}
+                onChange={(e) => setNewCourseDesc(e.target.value)}
+                style={{ marginLeft: 8, width: '80%' }}
+                placeholder="Short description for the course"
+                required
+              />
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <label>Image URL:</label>
+              <input 
+                type="text"
+                value={newCourseImage}
+                onChange={(e) => setNewCourseImage(e.target.value)}
+                style={{ marginLeft: 8, width: '80%' }}
+                placeholder="https://..."
+              />
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <label>Content (HTML):</label>
+              <textarea 
+                value={newCourseContent}
+                onChange={(e) => setNewCourseContent(e.target.value)}
+                rows={10}
+                style={{ display: 'block', width: '100%', marginTop: 4 }}
+                placeholder="<h2>Title</h2>\n<p>Rich HTML content here...</p>"
+                required
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button type="submit" className="btn btn-primary" disabled={editingId ? editSaving : courseSubmitting}>
+                {editingId ? (editSaving ? 'Saving...' : 'Save Changes') : (courseSubmitting ? 'Creating...' : 'Create Course')}
+              </button>
+              {editingId && (
+                <button type="button" className="btn" onClick={cancelEditing}>Cancel</button>
+              )}
+            </div>
+            {(courseSubmitMsg && !editingId) && <div style={{ marginTop: 8 }}>{courseSubmitMsg}</div>}
+            {(editMsg && editingId) && <div style={{ marginTop: 8 }}>{editMsg}</div>}
+          </form>
+
+          <h2 style={{ marginTop: '1.5rem' }}>Existing Courses</h2>
+          {coursesLoading ? (
+            <div className="loading">Loading courses...</div>
+          ) : (
+            <div className="user-table-container">
+              <table className="user-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {existingCourses.map((c, idx) => (
+                    <tr key={c.id}>
+                      <td>{c.id}</td>
+                      <td>{c.title}</td>
+                      <td>{c.description}</td>
+                      <td style={{ display: 'flex', gap: 8 }}>
+                        <button className="btn btn-sm" onClick={() => startEditing(c.id)}>Edit</button>
+                        <button className="btn btn-sm" onClick={() => moveCourse(idx, -1)} disabled={idx === 0}>↑</button>
+                        <button className="btn btn-sm" onClick={() => moveCourse(idx, 1)} disabled={idx === existingCourses.length - 1}>↓</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center' }}>
+                <button className="btn btn-primary" onClick={saveReorder} disabled={reorderSaving}>
+                  {reorderSaving ? 'Saving...' : 'Save Order'}
+                </button>
+                {reorderMsg && <span>{reorderMsg}</span>}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -6,116 +6,63 @@ import './Home.css';
 
 const Home = () => {
   // Course data
-  const [courses, setCourses] = useState([
-    {
-      id: 1,
-      title: 'Introduction to Programming',
-      description: 'Learn the basics of programming with this introductory course. Perfect for beginners who want to start their coding journey.',
-      image: 'https://via.placeholder.com/300x180?text=Programming+Basics'
-    },
-    {
-      id: 2,
-      title: 'Web Development Fundamentals',
-      description: 'Discover the core concepts of web development including HTML, CSS, and JavaScript to build modern websites.',
-      image: 'https://via.placeholder.com/300x180?text=Web+Development'
-    },
-    {
-      id: 3,
-      title: 'Database Design',
-      description: 'Master the principles of database design and learn how to create efficient, normalized database structures.',
-      image: 'https://via.placeholder.com/300x180?text=Database+Design'
-    },
-    {
-      id: 4,
-      title: 'Mobile App Development',
-      description: 'Build cross-platform mobile applications using modern frameworks and best practices.',
-      image: 'https://via.placeholder.com/300x180?text=Mobile+Development'
-    },
-    {
-      id: 5,
-      title: 'Machine Learning Basics',
-      description: 'Explore the fundamentals of machine learning algorithms and their applications in real-world scenarios.',
-      image: 'https://via.placeholder.com/300x180?text=Machine+Learning'
-    },
-    {
-      id: 6,
-      title: 'Cloud Computing',
-      description: 'Learn how to leverage cloud platforms for scalable and resilient application deployment.',
-      image: 'https://via.placeholder.com/300x180?text=Cloud+Computing'
-    },
-    {
-      id: 7,
-      title: 'Cybersecurity Essentials',
-      description: 'Understand the core principles of cybersecurity and how to protect systems from common threats.',
-      image: 'https://via.placeholder.com/300x180?text=Cybersecurity'
-    },
-    {
-      id: 8,
-      title: 'Data Structures and Algorithms',
-      description: 'Master essential data structures and algorithms needed for efficient problem solving in programming.',
-      image: 'https://via.placeholder.com/300x180?text=DS+and+Algorithms'
-    },
-    {
-      id: 9,
-      title: 'DevOps Practices',
-      description: 'Learn modern DevOps methodologies to streamline software development and deployment processes.',
-      image: 'https://via.placeholder.com/300x180?text=DevOps'
-    }
-  ]);
+  const [courses, setCourses] = useState([]);
 
   const [courseProgress, setCourseProgress] = useState({});
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [unlockThreshold, setUnlockThreshold] = useState(120);
 
-  // Check if user is authenticated and fetch course progress
   useEffect(() => {
-    const checkAuth = async () => {
+    const init = async () => {
+      try {
+        // Fetch course list (public)
+        const listRes = await axios.get('/api/courses');
+        setCourses(listRes.data || []);
+      } catch (err) {
+        console.error('Failed to fetch courses:', err);
+      }
+
+      // Auth-dependent data
       const token = localStorage.getItem('token');
-      
       if (token) {
         setIsAuthenticated(true);
         try {
-          // Set auth header
           axios.defaults.headers.common['x-auth-token'] = token;
-          
-          // Fetch course progress
-          const res = await axios.get('/api/courses/progress');
-          setCourseProgress(res.data);
-
-          // Fetch unlock threshold
-          try {
-            const settingRes = await axios.get('/api/settings/unlock-threshold');
-            const value = Number(settingRes.data?.value);
-            if (Number.isFinite(value)) {
-              setUnlockThreshold(value);
-            }
-          } catch (err) {
-            console.error('Error fetching unlock threshold:', err);
-          }
-        } catch (error) {
-          console.error('Error fetching course progress:', error);
+          const [progressRes, settingRes] = await Promise.all([
+            axios.get('/api/courses/progress'),
+            axios.get('/api/settings/unlock-threshold')
+          ]);
+          setCourseProgress(progressRes.data || {});
+          const value = Number(settingRes.data?.value);
+          if (Number.isFinite(value)) setUnlockThreshold(value);
+        } catch (err) {
+          console.error('Failed to fetch auth-dependent data:', err);
         }
       }
       setLoading(false);
     };
 
-    checkAuth();
+    init();
   }, []);
 
   // Function to determine if a course is locked
   const isCourseLocked = (courseId) => {
-    // Course 1 is always unlocked
-    if (courseId === 1) return false;
+    if (!courses || courses.length === 0) return true;
 
-    // If not authenticated, all courses except first are locked
+    // Find index of this course in the list
+    const index = courses.findIndex(c => String(c.id) === String(courseId));
+    if (index <= 0) {
+      // First course is always unlocked
+      return false;
+    }
+
     if (!isAuthenticated) return true;
 
-    // Check if previous course has been studied for at least threshold seconds
-    const previousCourseId = courseId - 1;
-    const previousCourseTime = courseProgress[previousCourseId] || 0;
-    
-    return previousCourseTime < unlockThreshold;
+    // Previous course by order
+    const previousCourseId = String(courses[index - 1].id);
+    const previousCourseTime = Number(courseProgress[previousCourseId] || 0);
+    return previousCourseTime < Number(unlockThreshold);
   };
 
   if (loading) {
