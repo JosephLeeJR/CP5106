@@ -6,6 +6,10 @@ former website: https://varlabs.comp.nus.edu.sg/tutorial/index.html
 
 Mcomp GenTrack Webiste: https://mysoc.nus.edu.sg/app/gentrack/
 
+Admin:e1373369@u.nus.edu
+
+Password:Jimmyli11
+
 ## Features
 
 - Modern MERN stack architecture (MongoDB, Express, React, Node.js)
