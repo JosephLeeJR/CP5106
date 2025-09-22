@@ -16,10 +16,12 @@ Password:Jimmyli11
 - Complete frontend and backend separation
 - Comprehensive user authentication system (Register, Login, JWT)
 - Role-based access control (Admin and Regular users)
-- Student profile management
-- Course progress tracking and time management
-- Admin dashboard for monitoring student engagement
-- Bulk user registration via allowlist upload
+- Course catalog with admin-managed rich HTML content (create/edit)
+- Sequential course unlock based on previous course watch time
+- Admin-configurable unlock threshold (seconds)
+- Course progress tracking and time recording
+- Admin dashboard for monitoring student engagement and batch allowlist upload
+- Admin course reordering to control unlock/display sequence
 - Persistent data storage with MongoDB
 
 ## Project Structure
@@ -27,23 +29,24 @@ Password:Jimmyli11
 ```
 CP5106/
 ├── backend/         # Express API server
-│   ├── controllers/ # Route controllers
 │   ├── models/      # MongoDB models
-│       ├── User.js        # User schema and model
-│       ├── Allowlist.js   # Allowlist for user registration
-│       └── CourseTime.js  # Course time tracking
+│   │   ├── User.js         # User schema and model
+│   │   ├── Course.js       # Course (title/description/image/content/order)
+│   │   ├── CourseTime.js   # Course time tracking per user
+│   │   └── Setting.js      # Global settings (e.g., unlock threshold)
 │   ├── middleware/  # Custom middleware (auth, admin)
 │   ├── routes/      # API routes
-│       ├── auth.js        # Authentication routes
-│       ├── users.js       # User management routes  
-│       └── courses.js     # Course management routes
+│   │   ├── auth.js         # Authentication routes
+│   │   ├── users.js        # User management routes
+│   │   ├── courses.js      # Course CRUD, progress, time, stats
+│   │   └── settings.js     # Global settings (unlock threshold)
 │   └── server.js    # Main server file
 │
 └── frontend/        # React frontend
     ├── public/      # Static files
     └── src/         # React source code
         ├── components/ # Reusable components
-        ├── pages/      # Page components
+        ├── pages/      # Page components (Home, CourseDetails, Dashboard, Admin)
         └── App.js      # Main React component
 ```
 
@@ -129,6 +132,16 @@ mongosh
 
 ### Course Management
 
-- `GET /api/courses/progress` - Get user's course progress
-- `POST /api/courses/time` - Record time spent on a course
-- `GET /api/courses/stats` - Get course time statistics (admin only) 
+- `GET /api/courses` - Get public course list (ordered by unlock/display order)
+- `GET /api/courses/:id` - Get public course details (includes HTML content)
+- `POST /api/courses` - Create a new course (admin only)
+- `PUT /api/courses/:id` - Update an existing course (admin only)
+- `PUT /api/courses/reorder/bulk` - Bulk update course order (admin only)
+- `GET /api/courses/progress` - Get current user's course progress (requires token)
+- `POST /api/courses/time` - Record time spent on a course (requires token)
+- `GET /api/courses/stats` - Get course time statistics (admin only)
+
+### Settings
+
+- `GET /api/settings/unlock-threshold` - Get unlock threshold in seconds (requires token)
+- `PUT /api/settings/unlock-threshold` - Update unlock threshold (admin only) 
