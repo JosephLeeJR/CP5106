@@ -15,6 +15,9 @@ const Navbar = ({ isAuthenticated, user, logout, isAdmin }) => {
       <li>
         <Link to="/dashboard">Dashboard</Link>
       </li>
+      <li>
+        <Link to="/change-password">Change Password</Link>
+      </li>
       {isAdmin && (
         <li>
           <Link to="/admin">Admin</Link>

@@ -106,3 +106,37 @@ exports.getCurrentUser = async (req, res) => {
     res.status(500).send('Server error');
   }
 }; 
+
+// @desc    Change password for current user
+// @route   POST /api/auth/change-password
+// @access  Private
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body || {};
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ msg: 'Current and new password are required' });
+    }
+    if (String(newPassword).length < 6) {
+      return res.status(400).json({ msg: 'New password must be at least 6 characters' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({ msg: 'Current password is incorrect' });
+    }
+
+    user.password = newPassword; // will be hashed by pre('save') hook
+    await user.save();
+
+    return res.json({ msg: 'Password updated successfully' });
+  } catch (err) {
+    console.error('Failed to change password:', err);
+    return res.status(500).json({ msg: 'Server error', error: err.message });
+  }
+};

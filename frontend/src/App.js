@@ -13,6 +13,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
 import CourseDetails from './pages/CourseDetails';
+import ChangePassword from './pages/ChangePassword';
 
 // Set default axios settings
 axios.defaults.baseURL = 'http://localhost:5000';
@@ -139,6 +140,14 @@ const App = () => {
               element={
                 <PrivateRoute>
                   <Dashboard user={user} />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/change-password" 
+              element={
+                <PrivateRoute>
+                  <ChangePassword />
                 </PrivateRoute>
               } 
             />
