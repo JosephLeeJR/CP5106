@@ -45,19 +45,32 @@ exports.uploadAllowlist = async (req, res) => {
   try {
     let content = '';
     if (req.file) {
-      // File upload
+      // File upload (expect CSV)
       content = req.file.buffer.toString('utf-8');
     } else if (req.body.text) {
-      // Text paste
+      // Text paste (CSV text also supported)
       content = req.body.text;
     } else {
       return res.status(400).json({ msg: 'No data provided' });
     }
 
-    // Parse content
-    const lines = content.split(/\r?\n/).filter(line => line.trim());
-    const entries = lines.map(line => {
-      const [name, email] = line.split(',').map(s => s.trim());
+    // Parse CSV content (supports optional header: name,email)
+    const lines = content.split(/\r?\n/).filter(line => line.trim().length > 0);
+    if (lines.length === 0) {
+      return res.status(400).json({ msg: 'No valid entries found' });
+    }
+
+    // Detect and drop header if present
+    const firstCols = lines[0].split(',').map(s => s.trim().toLowerCase().replace(/^"|"$/g, ''));
+    const hasHeader = firstCols.length >= 2 && firstCols[0] === 'name' && firstCols[1] === 'email';
+    const dataLines = hasHeader ? lines.slice(1) : lines;
+
+    const unquote = (s) => String(s).trim().replace(/^"|"$/g, '');
+    const entries = dataLines.map(line => {
+      // Basic CSV split (commas inside quotes not supported)
+      const parts = line.split(',');
+      const name = unquote(parts[0] || '');
+      const email = unquote(parts[1] || '');
       return { name, email };
     }).filter(e => e.name && e.email);
 
@@ -73,7 +86,7 @@ exports.uploadAllowlist = async (req, res) => {
       return res.status(400).json({ msg: 'No valid entries found' });
     }
     await Allowlist.bulkWrite(bulkOps);
-    res.json({ msg: 'Allowlist uploaded', count: entries.length });
+    res.json({ msg: 'Allowlist uploaded (CSV)', count: entries.length });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: 'Server error', error: err.message });

@@ -385,21 +385,21 @@ const Admin = () => {
 
       {activeTab === 'users' && (
         <div className="admin-card">
-          <h2>Batch Upload Allowlist</h2>
+          <h2>Batch Upload Allowlist (CSV)</h2>
           <form onSubmit={handleAllowlistUpload} style={{ marginBottom: '1rem' }}>
             <div style={{ marginBottom: '0.5rem' }}>
-              <label>Paste allowlist (one per line: Name,Email):</label>
+              <label>Paste allowlist CSV (optional header: name,email):</label>
               <textarea
                 value={allowlistText}
                 onChange={handleAllowlistTextChange}
                 rows={5}
                 style={{ width: '100%', marginTop: 4 }}
-                placeholder={"e.g.\nJoseph Lee,e1373369@u.nus.edu\nLi Minghao,e1373370@u.nus.edu"}
+                placeholder={"name,email\nJoseph Lee,e1373369@u.nus.edu\nLi Minghao,e1373370@u.nus.edu"}
               />
             </div>
             <div style={{ marginBottom: '0.5rem' }}>
-              <label>Or upload a .txt file:</label>
-              <input type="file" accept=".txt" onChange={handleAllowlistFileChange} />
+              <label>Or upload a .csv file:</label>
+              <input type="file" accept=".csv" onChange={handleAllowlistFileChange} />
             </div>
             <button type="submit" className="btn btn-primary" disabled={allowlistUploading}>
               {allowlistUploading ? 'Uploading...' : 'Upload Allowlist'}
