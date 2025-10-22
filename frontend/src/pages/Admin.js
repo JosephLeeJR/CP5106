@@ -9,6 +9,9 @@ const Admin = () => {
   const [courseStats, setCourseStats] = useState([]);
   const [statsLoading, setStatsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('users'); // 'users' | 'courseStats' | 'settings' | 'courses'
+  const [userQuery, setUserQuery] = useState('');
+  const [userAdminFilter, setUserAdminFilter] = useState('all'); // all | admin | nonadmin
+  const [userSort, setUserSort] = useState({ key: 'dateCreated', dir: 'desc' });
 
   const [allowlistText, setAllowlistText] = useState('');
   const [allowlistFile, setAllowlistFile] = useState(null);
@@ -52,6 +55,59 @@ const Admin = () => {
 
     fetchUsers();
   }, []);
+
+  const normalizedIncludes = (text, query) => {
+    return String(text || '')
+      .toLowerCase()
+      .includes(String(query || '').toLowerCase());
+  };
+
+  const getFilteredSortedUsers = () => {
+    let list = Array.isArray(users) ? [...users] : [];
+
+    // filter by admin status
+    if (userAdminFilter === 'admin') {
+      list = list.filter(u => !!u.isAdmin);
+    } else if (userAdminFilter === 'nonadmin') {
+      list = list.filter(u => !u.isAdmin);
+    }
+
+    // search query across name and email
+    if (userQuery && userQuery.trim()) {
+      const q = userQuery.trim();
+      list = list.filter(u => normalizedIncludes(u.name, q) || normalizedIncludes(u.email, q));
+    }
+
+    // sort
+    const { key, dir } = userSort || {};
+    const factor = dir === 'asc' ? 1 : -1;
+    list.sort((a, b) => {
+      let av = a?.[key];
+      let bv = b?.[key];
+      if (key === 'dateCreated') {
+        av = new Date(a?.dateCreated || 0).getTime();
+        bv = new Date(b?.dateCreated || 0).getTime();
+      } else if (key === 'isAdmin') {
+        av = a?.isAdmin ? 1 : 0;
+        bv = b?.isAdmin ? 1 : 0;
+      } else {
+        av = String(av || '').toLowerCase();
+        bv = String(bv || '').toLowerCase();
+      }
+      if (av < bv) return -1 * factor;
+      if (av > bv) return 1 * factor;
+      return 0;
+    });
+
+    return list;
+  };
+
+  const toggleSort = (key) => {
+    setUserSort(prev => {
+      if (!prev || prev.key !== key) return { key, dir: 'asc' };
+      return { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' };
+    });
+  };
 
   useEffect(() => {
     const fetchCourseStats = async () => {
@@ -352,20 +408,51 @@ const Admin = () => {
           </form>
           <h2>User List</h2>
           <p>Total users in system: {users.length}</p>
+
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: '0.5rem' }}>
+            <input
+              type="text"
+              placeholder="Search by name or email"
+              value={userQuery}
+              onChange={(e) => setUserQuery(e.target.value)}
+              style={{ flex: 1, minWidth: 220 }}
+            />
+            <select value={userAdminFilter} onChange={(e) => setUserAdminFilter(e.target.value)}>
+              <option value="all">All</option>
+              <option value="admin">Admins</option>
+              <option value="nonadmin">Non-admins</option>
+            </select>
+            <div>
+              <span style={{ marginRight: 8 }}>Sort:</span>
+              <select
+                value={userSort?.key}
+                onChange={(e) => setUserSort({ key: e.target.value, dir: 'asc' })}
+                style={{ marginRight: 8 }}
+              >
+                <option value="name">Name</option>
+                <option value="email">Email</option>
+                <option value="dateCreated">Registered</option>
+                <option value="isAdmin">Admin</option>
+              </select>
+              <button className="btn btn-sm" onClick={() => setUserSort(prev => ({ key: prev.key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }))}>
+                {userSort?.dir === 'asc' ? 'Asc' : 'Desc'}
+              </button>
+            </div>
+          </div>
           
           <div className="user-table-container">
             <table className="user-table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Registration Date</th>
-                  <th>Admin</th>
+                  <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('_id')}>ID</th>
+                  <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('name')}>Name</th>
+                  <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('email')}>Email</th>
+                  <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('dateCreated')}>Registration Date</th>
+                  <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('isAdmin')}>Admin</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map(user => (
+                {getFilteredSortedUsers().map(user => (
                   <tr key={user._id}>
                     <td>{user._id}</td>
                     <td>{user.name}</td>
