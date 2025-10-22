@@ -19,6 +19,18 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  year: {
+    type: String,
+    default: ''
+  },
+  semester: {
+    type: Number,
+    default: null
+  },
+  coursecode: {
+    type: String,
+    default: ''
+  },
   dateCreated: {
     type: Date,
     default: Date.now

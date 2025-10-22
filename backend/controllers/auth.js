@@ -20,11 +20,14 @@ exports.register = async (req, res) => {
       return res.status(400).json({ msg: 'User already exists' });
     }
 
-    // Create new user, use name from allowlist
+    // Create new user, use name and other fields from allowlist
     user = new User({
       name: allow.name,
       email,
-      password
+      password,
+      year: allow.year || '',
+      semester: allow.semester || null,
+      coursecode: allow.coursecode || ''
     });
 
     await user.save();

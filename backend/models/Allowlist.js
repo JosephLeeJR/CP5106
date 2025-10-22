@@ -10,6 +10,18 @@ const AllowlistSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  year: {
+    type: String,
+    default: ''
+  },
+  semester: {
+    type: Number,
+    default: null
+  },
+  coursecode: {
+    type: String,
+    default: ''
+  },
   dateAdded: {
     type: Date,
     default: Date.now

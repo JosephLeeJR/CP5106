@@ -11,6 +11,9 @@ const Admin = () => {
   const [activeTab, setActiveTab] = useState('users'); // 'users' | 'courseStats' | 'settings' | 'courses'
   const [userQuery, setUserQuery] = useState('');
   const [userAdminFilter, setUserAdminFilter] = useState('all'); // all | admin | nonadmin
+  const [userYearFilter, setUserYearFilter] = useState('');
+  const [userSemesterFilter, setUserSemesterFilter] = useState('');
+  const [userCoursecodeFilter, setUserCoursecodeFilter] = useState('');
   const [userSort, setUserSort] = useState({ key: 'dateCreated', dir: 'desc' });
 
   const [allowlistText, setAllowlistText] = useState('');
@@ -72,10 +75,30 @@ const Admin = () => {
       list = list.filter(u => !u.isAdmin);
     }
 
-    // search query across name and email
+    // filter by year
+    if (userYearFilter && userYearFilter.trim()) {
+      list = list.filter(u => normalizedIncludes(u.year, userYearFilter));
+    }
+
+    // filter by semester
+    if (userSemesterFilter && userSemesterFilter.trim()) {
+      list = list.filter(u => String(u.semester || '') === String(userSemesterFilter));
+    }
+
+    // filter by coursecode
+    if (userCoursecodeFilter && userCoursecodeFilter.trim()) {
+      list = list.filter(u => normalizedIncludes(u.coursecode, userCoursecodeFilter));
+    }
+
+    // search query across name, email, year, and coursecode
     if (userQuery && userQuery.trim()) {
       const q = userQuery.trim();
-      list = list.filter(u => normalizedIncludes(u.name, q) || normalizedIncludes(u.email, q));
+      list = list.filter(u => 
+        normalizedIncludes(u.name, q) || 
+        normalizedIncludes(u.email, q) ||
+        normalizedIncludes(u.year, q) ||
+        normalizedIncludes(u.coursecode, q)
+      );
     }
 
     // sort
@@ -90,6 +113,9 @@ const Admin = () => {
       } else if (key === 'isAdmin') {
         av = a?.isAdmin ? 1 : 0;
         bv = b?.isAdmin ? 1 : 0;
+      } else if (key === 'semester') {
+        av = Number(a?.semester || 0);
+        bv = Number(b?.semester || 0);
       } else {
         av = String(av || '').toLowerCase();
         bv = String(bv || '').toLowerCase();
@@ -388,13 +414,13 @@ const Admin = () => {
           <h2>Batch Upload Allowlist (CSV)</h2>
           <form onSubmit={handleAllowlistUpload} style={{ marginBottom: '1rem' }}>
             <div style={{ marginBottom: '0.5rem' }}>
-              <label>Paste allowlist CSV (optional header: name,email):</label>
+              <label>Paste allowlist CSV (header: name,email,year,semester,coursecode):</label>
               <textarea
                 value={allowlistText}
                 onChange={handleAllowlistTextChange}
                 rows={5}
                 style={{ width: '100%', marginTop: 4 }}
-                placeholder={"name,email\nJoseph Lee,e1373369@u.nus.edu\nLi Minghao,e1373370@u.nus.edu"}
+                placeholder={"name,email,year,semester,coursecode\nJoseph Lee,e1373369@u.nus.edu,2024,1,CP5106\nLi Minghao,e1373370@u.nus.edu,2024,2,CP5106"}
               />
             </div>
             <div style={{ marginBottom: '0.5rem' }}>
@@ -409,34 +435,59 @@ const Admin = () => {
           <h2>User List</h2>
           <p>Total users in system: {users.length}</p>
 
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: '0.5rem' }}>
-            <input
-              type="text"
-              placeholder="Search by name or email"
-              value={userQuery}
-              onChange={(e) => setUserQuery(e.target.value)}
-              style={{ flex: 1, minWidth: 220 }}
-            />
-            <select value={userAdminFilter} onChange={(e) => setUserAdminFilter(e.target.value)}>
-              <option value="all">All</option>
-              <option value="admin">Admins</option>
-              <option value="nonadmin">Non-admins</option>
-            </select>
-            <div>
-              <span style={{ marginRight: 8 }}>Sort:</span>
-              <select
-                value={userSort?.key}
-                onChange={(e) => setUserSort({ key: e.target.value, dir: 'asc' })}
-                style={{ marginRight: 8 }}
-              >
-                <option value="name">Name</option>
-                <option value="email">Email</option>
-                <option value="dateCreated">Registered</option>
-                <option value="isAdmin">Admin</option>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <input
+                type="text"
+                placeholder="Search by name, email, year, or coursecode"
+                value={userQuery}
+                onChange={(e) => setUserQuery(e.target.value)}
+                style={{ flex: 1, minWidth: 220 }}
+              />
+              <select value={userAdminFilter} onChange={(e) => setUserAdminFilter(e.target.value)}>
+                <option value="all">All Users</option>
+                <option value="admin">Admins</option>
+                <option value="nonadmin">Non-admins</option>
               </select>
-              <button className="btn btn-sm" onClick={() => setUserSort(prev => ({ key: prev.key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }))}>
-                {userSort?.dir === 'asc' ? 'Asc' : 'Desc'}
-              </button>
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <input
+                type="text"
+                placeholder="Filter by year"
+                value={userYearFilter}
+                onChange={(e) => setUserYearFilter(e.target.value)}
+                style={{ width: 120 }}
+              />
+              <select value={userSemesterFilter} onChange={(e) => setUserSemesterFilter(e.target.value)} style={{ width: 120 }}>
+                <option value="">All Semesters</option>
+                <option value="1">Semester 1</option>
+                <option value="2">Semester 2</option>
+              </select>
+              <input
+                type="text"
+                placeholder="Filter by coursecode"
+                value={userCoursecodeFilter}
+                onChange={(e) => setUserCoursecodeFilter(e.target.value)}
+                style={{ width: 150 }}
+              />
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+                <span>Sort:</span>
+                <select
+                  value={userSort?.key}
+                  onChange={(e) => setUserSort({ key: e.target.value, dir: 'asc' })}
+                >
+                  <option value="name">Name</option>
+                  <option value="email">Email</option>
+                  <option value="year">Year</option>
+                  <option value="semester">Semester</option>
+                  <option value="coursecode">Coursecode</option>
+                  <option value="dateCreated">Registered</option>
+                  <option value="isAdmin">Admin</option>
+                </select>
+                <button className="btn btn-sm" onClick={() => setUserSort(prev => ({ key: prev.key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }))}>
+                  {userSort?.dir === 'asc' ? 'Asc' : 'Desc'}
+                </button>
+              </div>
             </div>
           </div>
           
@@ -447,6 +498,9 @@ const Admin = () => {
                   <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('_id')}>ID</th>
                   <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('name')}>Name</th>
                   <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('email')}>Email</th>
+                  <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('year')}>Year</th>
+                  <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('semester')}>Semester</th>
+                  <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('coursecode')}>Coursecode</th>
                   <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('dateCreated')}>Registration Date</th>
                   <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('isAdmin')}>Admin</th>
                 </tr>
@@ -457,6 +511,9 @@ const Admin = () => {
                     <td>{user._id}</td>
                     <td>{user.name}</td>
                     <td>{user.email}</td>
+                    <td>{user.year || '-'}</td>
+                    <td>{user.semester || '-'}</td>
+                    <td>{user.coursecode || '-'}</td>
                     <td>{new Date(user.dateCreated).toLocaleString()}</td>
                     <td>{user.isAdmin ? 'Yes' : 'No'}</td>
                   </tr>

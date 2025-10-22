@@ -54,7 +54,7 @@ exports.uploadAllowlist = async (req, res) => {
       return res.status(400).json({ msg: 'No data provided' });
     }
 
-    // Parse CSV content (supports optional header: name,email)
+    // Parse CSV content (supports optional header: name,email,year,semester,coursecode)
     const lines = content.split(/\r?\n/).filter(line => line.trim().length > 0);
     if (lines.length === 0) {
       return res.status(400).json({ msg: 'No valid entries found' });
@@ -71,14 +71,18 @@ exports.uploadAllowlist = async (req, res) => {
       const parts = line.split(',');
       const name = unquote(parts[0] || '');
       const email = unquote(parts[1] || '');
-      return { name, email };
+      const year = unquote(parts[2] || '');
+      const semesterRaw = unquote(parts[3] || '');
+      const semester = semesterRaw ? Number(semesterRaw) : null;
+      const coursecode = unquote(parts[4] || '');
+      return { name, email, year, semester, coursecode };
     }).filter(e => e.name && e.email);
 
     // Bulk upsert
     const bulkOps = entries.map(e => ({
       updateOne: {
         filter: { email: e.email },
-        update: { $set: { name: e.name, email: e.email } },
+        update: { $set: { name: e.name, email: e.email, year: e.year, semester: e.semester, coursecode: e.coursecode } },
         upsert: true
       }
     }));

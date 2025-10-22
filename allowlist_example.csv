@@ -1,5 +1,5 @@
-name,email
-Joseph Lee,e1373369@u.nus.edu
-Li Minghao,e1373370@u.nus.edu
-Anya Sharma,anya.sharma@example.com
+name,email,year,semester,coursecode
+Joseph Lee,e1373369@u.nus.edu,2024,1,CP5106
+Li Minghao,e1373370@u.nus.edu,2024,2,CP5106
+Anya Sharma,anya.sharma@example.com,2025,1,CP5107
 
