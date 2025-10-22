@@ -68,7 +68,7 @@ const Home = () => {
   if (loading) {
     return (
       <div className="home-container">
-        <div className="loading">Loading courses...</div>
+        <div className="loading">Loading lessons...</div>
       </div>
     );
   }
@@ -84,7 +84,7 @@ const Home = () => {
         <h2>Available Lessons</h2>
         {!isAuthenticated && (
           <div className="course-note">
-            <p><i className="fas fa-info-circle"></i> Please log in to unlock all courses. Course progression is sequential.</p>
+            <p><i className="fas fa-info-circle"></i> Please log in to unlock all lessons. Lesson progression is sequential.</p>
           </div>
         )}
         <div className="courses-grid">

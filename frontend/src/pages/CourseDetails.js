@@ -46,7 +46,7 @@ const CourseDetails = ({ user }) => {
 
           if (index > 0 && previousCourseTime < (Number.isFinite(unlockThreshold) ? unlockThreshold : 120)) {
             setIsLocked(true);
-            alert(`This course is locked. You need to spend at least ${Number.isFinite(unlockThreshold) ? unlockThreshold : 120} seconds on the previous course to unlock it.`);
+            alert(`This lesson is locked. You need to spend at least ${Number.isFinite(unlockThreshold) ? unlockThreshold : 120} seconds on the previous lesson to unlock it.`);
             navigate('/');
             return;
           } else {
@@ -89,7 +89,7 @@ const CourseDetails = ({ user }) => {
           setCourse(res.data);
           setLoading(false);
         } catch (err) {
-          setCourse({ title: 'Course Not Found', content: '<p>The requested course could not be found.</p>' });
+          setCourse({ title: 'Lesson Not Found', content: '<p>The requested lesson could not be found.</p>' });
           setLoading(false);
         }
       };
@@ -134,7 +134,7 @@ const CourseDetails = ({ user }) => {
     <div className="course-details-container">
       <div className="course-details-content">
         <div className="course-back-button">
-          <Link to="/" className="btn back-btn">← Back to Courses</Link>
+          <Link to="/" className="btn back-btn">← Back to Lessons</Link>
         </div>
         
         <div className="course-details-body">

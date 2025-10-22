@@ -311,7 +311,7 @@ const Admin = () => {
           className={`tab-button ${activeTab === 'courseStats' ? 'active' : ''}`} 
           onClick={() => setActiveTab('courseStats')}
         >
-          Course Statistics
+          Lesson Statistics
         </button>
         <button 
           className={`tab-button ${activeTab === 'settings' ? 'active' : ''}`} 
@@ -323,7 +323,7 @@ const Admin = () => {
           className={`tab-button ${activeTab === 'courses' ? 'active' : ''}`} 
           onClick={() => setActiveTab('courses')}
         >
-          Courses
+          Lessons
         </button>
       </div>
 
@@ -382,11 +382,11 @@ const Admin = () => {
 
       {activeTab === 'courseStats' && (
         <div className="admin-card">
-          <h2>Course Time Statistics</h2>
+          <h2>Lesson Time Statistics</h2>
           {statsLoading ? (
             <div className="loading">Loading statistics...</div>
           ) : courseStats.length === 0 ? (
-            <div className="no-data">No course activity data available yet.</div>
+            <div className="no-data">No lesson activity data available yet.</div>
           ) : (
             <div className="stats-container">
               <div className="user-table-container">
@@ -395,7 +395,7 @@ const Admin = () => {
                     <tr>
                       <th>User</th>
                       <th>Email</th>
-                      <th>Course</th>
+                      <th>Lesson</th>
                       <th>Total Time</th>
                       <th>Last Visit</th>
                     </tr>
@@ -441,7 +441,7 @@ const Admin = () => {
 
       {activeTab === 'courses' && (
         <div className="admin-card">
-          <h2>{editingId ? 'Edit Course' : 'Create Course'}</h2>
+          <h2>{editingId ? 'Edit Lesson' : 'Create Lesson'}</h2>
           <form onSubmit={editingId ? handleSaveEdit : handleCreateCourse}>
             <div style={{ marginBottom: '0.5rem' }}>
               <label>Title:</label>
@@ -450,7 +450,7 @@ const Admin = () => {
                 value={newCourseTitle}
                 onChange={(e) => setNewCourseTitle(e.target.value)}
                 style={{ marginLeft: 8, width: '60%' }}
-                placeholder="Enter course title"
+                placeholder="Enter lesson title"
                 required
               />
             </div>
@@ -461,7 +461,7 @@ const Admin = () => {
                 value={newCourseDesc}
                 onChange={(e) => setNewCourseDesc(e.target.value)}
                 style={{ marginLeft: 8, width: '80%' }}
-                placeholder="Short description for the course"
+                placeholder="Short description for the lesson"
                 required
               />
             </div>
@@ -488,7 +488,7 @@ const Admin = () => {
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <button type="submit" className="btn btn-primary" disabled={editingId ? editSaving : courseSubmitting}>
-                {editingId ? (editSaving ? 'Saving...' : 'Save Changes') : (courseSubmitting ? 'Creating...' : 'Create Course')}
+                {editingId ? (editSaving ? 'Saving...' : 'Save Changes') : (courseSubmitting ? 'Creating...' : 'Create Lesson')}
               </button>
               {editingId && (
                 <button type="button" className="btn" onClick={cancelEditing}>Cancel</button>
@@ -498,9 +498,9 @@ const Admin = () => {
             {(editMsg && editingId) && <div style={{ marginTop: 8 }}>{editMsg}</div>}
           </form>
 
-          <h2 style={{ marginTop: '1.5rem' }}>Existing Courses</h2>
+          <h2 style={{ marginTop: '1.5rem' }}>Existing Lessons</h2>
           {coursesLoading ? (
-            <div className="loading">Loading courses...</div>
+            <div className="loading">Loading lessons...</div>
           ) : (
             <div className="user-table-container">
               <table className="user-table">

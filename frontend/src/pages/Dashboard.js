@@ -61,9 +61,9 @@ const Dashboard = ({ user }) => {
     .filter(([_, seconds]) => Number(seconds) > 0)
     .map(([courseIdStr, seconds]) => {
       const c = courseById.get(String(courseIdStr));
-      const fallbackTitle = `Course ${String(courseIdStr).slice(0, 6)}`;
+      const fallbackTitle = `Lesson ${String(courseIdStr).slice(0, 6)}`;
       const title = c?.title || fallbackTitle;
-      const image = c?.image || 'https://via.placeholder.com/300x180?text=Course';
+      const image = c?.image || 'https://via.placeholder.com/300x180?text=Lesson';
       const threshold = Number(unlockThreshold);
       const pct = threshold > 0 ? Math.min(100, Math.round((Number(seconds) / threshold) * 100)) : 100;
       return {
@@ -108,7 +108,7 @@ const Dashboard = ({ user }) => {
       </div>
 
       <div className="dashboard-card mt-4">
-        <h2>Your Course Progress</h2>
+        <h2>Your Lesson Progress</h2>
         {watchedCourses.length > 0 ? (
           <div className="enrolled-courses">
             {watchedCourses.map(course => (
@@ -136,8 +136,8 @@ const Dashboard = ({ user }) => {
           </div>
         ) : (
           <div className="no-courses">
-            <p>No course activity yet.</p>
-            <Link to="/" className="btn">Browse Courses</Link>
+            <p>No lesson activity yet.</p>
+            <Link to="/" className="btn">Browse Lessons</Link>
           </div>
         )}
       </div>
