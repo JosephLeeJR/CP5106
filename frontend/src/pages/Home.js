@@ -77,11 +77,11 @@ const Home = () => {
     <div className="home-container">
       <div className="hero-section">
         <h1>Welcome to VARlabs</h1>
-        <p>Explore our comprehensive tutorials to enhance your skills</p>
+        <p>Explore our comprehensive lessons to enhance your skills</p>
       </div>
 
       <div className="courses-section">
-        <h2>Available Courses</h2>
+        <h2>Available Lessons</h2>
         {!isAuthenticated && (
           <div className="course-note">
             <p><i className="fas fa-info-circle"></i> Please log in to unlock all courses. Course progression is sequential.</p>

@@ -44,7 +44,7 @@ const Navbar = ({ isAuthenticated, user, logout, isAdmin }) => {
     <nav className="navbar">
       <h1>
         <Link to="/">
-          <i className="fas fa-laptop-code"></i> Tutorial Hub
+          <i className="fas fa-laptop-code"></i> VARlabs
         </Link>
       </h1>
       <div className="navbar-links">
